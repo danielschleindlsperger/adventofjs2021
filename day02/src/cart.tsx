@@ -1,6 +1,7 @@
 import { createContext, FunctionComponent } from 'preact'
 import { useContext, useState } from 'preact/hooks'
 import { useMenu } from './menu'
+import { Price } from './price'
 
 export const Cart = () => {
   const { cart } = useCart()
@@ -9,10 +10,28 @@ export const Cart = () => {
   return (
     <div>
       <CartList cart={cart} />
-      <div>
-        <div>Subtotal: {total.subTotal.toFixed(2)}</div>
-        <div>Tax: {total.tax.toFixed(2)}</div>
-        <div>Total: {total.total.toFixed(2)}</div>
+      <div className=" py-4 flex justify-end border-t-4 border-indigo-200">
+        {/* TODO: maybe a grid layout might be better after all... */}
+        <table className="text-right">
+          <tr>
+            <td className="pr-4">Subtotal: </td>
+            <td>
+              <Price price={total.subTotal} />
+            </td>
+          </tr>
+          <tr>
+            <td className="pr-4">Tax: </td>
+            <td>
+              <Price price={total.tax} />
+            </td>
+          </tr>
+          <tr>
+            <td className="pr-4">Total: </td>
+            <td>
+              <Price price={total.total} highlight />
+            </td>
+          </tr>
+        </table>
       </div>
     </div>
   )
@@ -31,28 +50,52 @@ const CartList = ({ cart }: { cart: CartState }) => {
 const CartListItem = ({ id, price, quantity }: CartItem) => {
   const menu = useMenu()
   const { decreaseItemQty, increaseItemQty, removeItemFromCart } = useCart()
-  const total = (price * quantity).toFixed(2)
+  const total = price * quantity
   const menuItem = menu.find((x) => x.id === id)
   if (!menuItem) return null
 
   const { name, image } = menuItem
 
   return (
-    <li key={id}>
-      <div>
-        <div>
-          <img src={image} />
-          {quantity}
+    <li key={id} className="flex gap-4 py-8 border-b border-indigo-200 last:border-b-0">
+      <div className="self-start relative">
+        <img src={image} className="w-20" />
+        <div className="absolute inset-0 flex justify-center items-center">
+          <div className="rounded-full bg-black text-white w-8 h-8 font-bold flex justify-center items-center">
+            {quantity}
+          </div>
         </div>
-        {name}
       </div>
-      <div>
-        {quantity === 0 ? <button onClick={() => removeItemFromCart(id)}>Remove</button> : null}
-        <button onClick={() => decreaseItemQty(id)}>{'<'}</button>
-        <span>{quantity}</span>
-        <button onClick={() => increaseItemQty(id)}>{'>'}</button>- ${total}
+      <div className="flex flex-col gap-2">
+        <div>
+          <h2>{name}</h2>
+          <Price price={price} small />
+        </div>
+        <div className="mt-2 flex gap-4 items-center">
+          <ChevronButton direction="left" onClick={() => decreaseItemQty(id)} />
+          <span className="font-bold">{quantity}</span>
+          <ChevronButton direction="right" onClick={() => increaseItemQty(id)} />
+          <Price price={total} />
+        </div>
+
+        {quantity === 0 ? (
+          <button className="self-end" onClick={() => removeItemFromCart(id)}>
+            Remove
+          </button>
+        ) : null}
       </div>
     </li>
+  )
+}
+
+const ChevronButton: FunctionComponent<{ onClick?: () => void; direction: 'left' | 'right' }> = ({
+  direction,
+  onClick,
+}) => {
+  return (
+    <button onClick={onClick} className="w-8 h-8 rounded-full bg-indigo-600 text-white font-bold">
+      {direction === 'left' ? '<' : '>'}
+    </button>
   )
 }
 
@@ -70,16 +113,8 @@ const CartContext = createContext<{ cart: CartState; setCart: (cartState: CartSt
 })
 CartContext.displayName = 'CartContext'
 
-const INITIAL_STATE_FOR_TESTING = [
-  {
-    id: '1',
-    quantity: 2,
-    price: 12.3,
-  },
-]
-
 export const CartContextProvider: FunctionComponent = ({ children }) => {
-  const [cart, setCart] = useState<CartState>({ items: INITIAL_STATE_FOR_TESTING })
+  const [cart, setCart] = useState<CartState>({ items: [] })
   return <CartContext.Provider value={{ cart, setCart }}>{children}</CartContext.Provider>
 }
 

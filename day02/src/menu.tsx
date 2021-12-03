@@ -1,4 +1,6 @@
+import { FunctionComponent } from 'preact'
 import { itemIsInCart, useCart } from './cart'
+import { Price } from './price'
 
 type MenuEntry = {
   id: string
@@ -12,30 +14,66 @@ export type Menu = MenuEntry[]
 export const useMenu = () => menu
 
 export const Menu = () => {
-  const { cart, addItemToCart } = useCart()
   return (
-    <section>
-      <h1>To Go Menu</h1>
-      <ul>
-        {menu.map((menuItem) => (
-          <li key={menuItem.id}>
-            <img src={menuItem.image} />
-            <div>
-              <span>{menuItem.name}</span>
-              <span>${menuItem.price}</span>
-              {itemIsInCart(menuItem.id, cart) ? (
-                <button>In Cart</button>
-              ) : (
-                <button onClick={() => addItemToCart(menuItem.id, menuItem.price)}>
-                  Add to Cart
-                </button>
-              )}
-            </div>
-          </li>
-        ))}
-      </ul>
-    </section>
+    <ul className="flex flex-col gap-8">
+      {menu.map((menuItem, idx) => (
+        <MenuListEntry {...menuItem} index={idx} />
+      ))}
+    </ul>
   )
+}
+
+const MenuListEntry = ({ id, name, image, price, index }: MenuEntry & { index: number }) => {
+  const { cart, addItemToCart } = useCart()
+  const isAlreadyInCart = itemIsInCart(id, cart)
+  const colors = [
+    'bg-blue-100',
+    'bg-red-100',
+    'bg-gray-100',
+    'bg-green-100',
+    'bg-yellow-100',
+    'bg-indigo-100',
+    'bg-pink-100',
+  ]
+  const color = colors[index % colors.length]
+  return (
+    <li key={id} className={cx(color, 'flex rounded-l-2xl -mr-8')}>
+      <img src={image} className="h-40 block flex-grow-0 -ml-6 -mt-6" />
+      <div className="flex flex-col justify-between gap-2 px-2 py-4 pb-0">
+        <h2 className="text-black">{name}</h2>
+        <Price price={price} />
+        <div className="transform translate-y-1/2">
+          {isAlreadyInCart ? (
+            <Button>In Cart</Button>
+          ) : (
+            <Button primary onClick={() => addItemToCart(id, price)}>
+              Add to Cart
+            </Button>
+          )}
+        </div>
+      </div>
+    </li>
+  )
+}
+
+const Button: FunctionComponent<{ primary?: boolean; onClick?: () => void; disabled?: boolean }> =
+  ({ primary = false, children, ...props }) => {
+    return (
+      <button
+        className={cx(
+          'rounded-full px-6 py-1 text-white font-bold',
+          primary ? 'bg-indigo-600' : 'bg-black',
+        )}
+        {...props}
+      >
+        {children}
+      </button>
+    )
+  }
+
+// Read: "classnames"
+function cx(...names: Array<string | null | undefined | boolean>): string {
+  return names.filter((x) => typeof x === 'string' && x).join(' ')
 }
 
 const menu: Menu = [
