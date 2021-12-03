@@ -57,7 +57,7 @@ const CartListItem = ({ id, price, quantity }: CartItem) => {
   const { name, image } = menuItem
 
   return (
-    <li key={id} className="flex gap-4 py-8 border-b border-indigo-200 last:border-b-0">
+    <li key={id} className="flex gap-4 py-8 border-b border-indigo-200 last:border-b-0 first:pt-0">
       <div className="self-start relative">
         <img src={image} className="w-20" />
         <div className="absolute inset-0 flex justify-center items-center">

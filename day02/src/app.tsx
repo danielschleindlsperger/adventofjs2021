@@ -5,8 +5,11 @@ import { Menu } from './menu'
 export function App() {
   return (
     <CartContextProvider>
-      <div className="bg-indigo-50 w-full flex justify-center">
-        <div className="mt-20 max-w-full grid grid-cols-2 gap-12" style={{ width: '50rem' }}>
+      <div className="bg-indigo-50 w-full min-h-0 flex flex-col items-start">
+        <div
+          className="mx-auto py-20 flex-1 self-stretch max-w-full grid grid-cols-2 gap-12"
+          style={{ width: '50rem' }}
+        >
           <Card title="To Go Menu">
             <Menu />
           </Card>
